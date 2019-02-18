@@ -93,7 +93,7 @@
 
         var link = $('#downloadInventory');
         link.attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(ret)));
-        link.attr('download', userData['9qh17ZUf'] + "_" + exportDate + "_inventory.json");
+        link.attr('download', userData['LhVz6aD2'][0]['9qh17ZUf'] + "_" + exportDate + "_inventory.json");
         link.removeClass("hidden");
     }
 
@@ -155,7 +155,7 @@
 
         var link = $('#downloadUnitCollection');
         link.attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(ret)));
-        link.attr('download', userData['9qh17ZUf'] + "_" + exportDate + "_units.json");
+        link.attr('download', userData['LhVz6aD2'][0]['9qh17ZUf'] + "_" + exportDate + "_units.json");
         link.removeClass("hidden");
     }
 
