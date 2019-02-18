@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap.min.css"/>
+    <style>
+      #container {
+        width: 400px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .title {
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      .instruction {
+        margin-bottom: 4px;
+      }
+      .text {
+        font-size: 12px;
+      }
+
+      #export {
+        margin-bottom: 4px;
+      }
+
+      .notStarted {
+        visibility: hidden;
+      }
+
+      .loading {
+        display: none;
+      }
+      .ok {
+        display: none;
+      }
+      .error {
+        display: none;
+      }
+
+      .started .loading {
+        display: inline;
+      }
+
+      .finished .ok {
+        display: inline;
+      }
+
+      .hidden {
+        visibility: hidden;
+      }
+
+      .loading {
+        position: relative;
+      }
+      .loading .dot {
+        display: inline-block;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        margin-right: 3px;
+        background: #303131;
+        animation: wave 1.3s linear infinite;
+      }
+
+      .loading .dot:nth-child(2) {
+         animation-delay: -1.1s;
+       }
+
+      .loading .dot:nth-child(3) {
+         animation-delay: -0.9s;
+       }
+
+      @keyframes wave {
+        0%, 60%, 100% {
+          transform: initial;
+        }
+
+        30% {
+          transform: translateY(-5px);
+        }
+      }
+
+      .or {
+        align-self: center;
+        margin: 5px;
+      }
+    </style>
+  </head>
+  <body id="container">
+    <div class="title">FFBE Data Exporter (Facebook)</div>
+    <div class="instruction text">Make sure you're connected to Facebook then click on :</div>
+    <button id="export" class="btn btn-primary">Start Export</button>
+    <div id="status">
+      <div id="facebookToken" class="text notStarted">Facebook Token: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
+      <div id="facebookId" class="text notStarted">Facebook User Id: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
+      <div id="ffbeConnect" class="text notStarted">FFBE Connexion: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
+      <div id="ffbeUserData" class="text notStarted">FFBE User Data: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
+    </div>
+    <button id="exviusLink" class="hidden btn btn-primary" href="">Send to ExviusDB<span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span></button>
+    <div class="or hidden">- or -</div>
+    <div id="downloadLinks">
+      <a id="downloadInventory" class="hidden btn btn-outline-secondary" href="">Download Inventory</a>
+      <a id="downloadUnitCollection" class="hidden btn btn-outline-secondary" href="">Download Unit Collection</a>
+    </div>
+    <script src="lib/jquery.min.js"></script>
+    <script src="popup.js"></script>
+
+  </body>
+</html>
