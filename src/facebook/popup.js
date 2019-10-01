@@ -31,34 +31,17 @@
             div.addClass("finished");
         } else if (msg.type == "userData") {
             exportDate = formatDate(new Date());
-            addExviusDBLink(msg.data);
             addInventoryLink(msg.data);
             addUnitCollectionLink(msg.data);
         }
     });
 
-    function addExviusDBLink(userData) {
-		var baseExviusGGURL = "https://exvius.gg";
-		//var baseExviusGGURL = "http://127.0.0.1:8000";
-        var button = $('#exviusLink');
-        button.click(function() {
-            button.addClass('started');
-            button.prop("disabled",true);
-			var servicePayload = {"Duz1v8x9": userData["Duz1v8x9"], "uRZxw78i": userData["uRZxw78i"], "gP9TW2Bf": userData["gP9TW2Bf"],"1S8P2u9f": userData["1S8P2u9f"],"3oU9Ktb7": userData["3oU9Ktb7"],"LhVz6aD2": userData["LhVz6aD2"],"aS39Eshy": userData["aS39Eshy"],"w83oV9uP": userData["w83oV9uP"],"TJ9eL80N": userData["TJ9eL80N"],"49rQB3fP": userData["49rQB3fP"],"B71MekS8": userData["B71MekS8"],"5Eb0Rig6": userData["5Eb0Rig6"]}
-            $.post( baseExviusGGURL + "/gl/p/upload/", JSON.stringify(servicePayload))
-               .done(function( data3 ) {
-                    button.addClass('finished');
-                    button.prop("disabled",false);
-                    chrome.tabs.create({active: true, url: baseExviusGGURL + "/gl/p/" + userData["LhVz6aD2"][0]["m3Wghr1j"] + "/"});
-                });
-        });
-        button.removeClass("hidden");
-        $('.or').removeClass('hidden');
-    }
-
-    function addInventoryLink(userData) {
+    function addInventoryLink(data) {
         var ret = [];
-		
+
+        let userData = data.userData;
+        let userData2 = data.userData2;
+
         var userEquipListStringArray = userData['w83oV9uP'][0]['HpL3FM4V'].split(",");
 
         userEquipListStringArray.forEach(function(userEquipStr){
@@ -68,7 +51,7 @@
             ret.push({'id':equipId, 'count':equipCount});
         });
 
-        var userCustomEquips = userData['uRZxw78i'];
+        var userCustomEquips = userData2['uRZxw78i'];
         userCustomEquips.forEach(function(userCustomEquip){
             var equipId = userCustomEquip["J1YX9kmM"];
             var enhancements = [];
@@ -90,8 +73,7 @@
             var materiaCount = parseInt(materiaStrData[1]);
             ret.push({'id':materiaId, 'count':materiaCount});
         });
-		
-		
+
 
         var link = $('#downloadInventory');
         link.attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(ret)));

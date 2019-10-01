@@ -41,6 +41,9 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
                     });
 
 
+            })
+            .fail(function( jqXHR, textStatus, errorThrown ) {
+                console.log(errorThrown);
             });
     }
 }, {
@@ -91,10 +94,12 @@ function getUserData(fbID, fbToken)
 
     var key = "rVG09Xnt\0\0\0\0\0\0\0\0";
     var key2 = "rcsq2eG7\0\0\0\0\0\0\0\0";
+    var key3 = "7VNRi6Dk\0\0\0\0\0\0\0\0";
     var token = "";
 
     var keyUtf8 = CryptoJS.enc.Utf8.parse(key);
     var key2Utf8 = CryptoJS.enc.Utf8.parse(key2);
+    var key3Utf8 = CryptoJS.enc.Utf8.parse(key2);
 
 
     var testPayload = "{\"LhVz6aD2\":[{\"9Tbns0eI\":null,\"9qh17ZUf\":null,\"6Nf5risL\":\"0\",\"io30YcLA\":\"Nexus 6P_android6.0\",\"K1G4fBjF\":\"2\",\"e8Si6TGh\":\"\",\"U7CPaH9B\":null,\"1WKh6Xqe\":\"ver.2.7.0.1\",\"64anJRhx\":\"2019-02-08 11:15:15\",\"Y76dKryw\":null,\"6e4ik6kA\":\"\",\"NggnPgQC\":\"\",\"X6jT6zrQ\":null,\"DOFV3qRF\":null,\"P_FB_TOKEN\":\"" + fbToken + "\",\"P_FB_ID\":\"" + fbID + "\"}],\"Euv8cncS\":[{\"K2jzG6bp\":\"0\"}],\"c1qYg84Q\":[{\"a4hXTIm0\":\"F_APP_VERSION_IOS\",\"wM9AfX6I\":\"10000\"},{\"a4hXTIm0\":\"F_RSC_VERSION\",\"wM9AfX6I\":\"0\"},{\"a4hXTIm0\":\"F_MST_VERSION\",\"wM9AfX6I\":\"377\"}]}";
@@ -126,8 +131,27 @@ function getUserData(fbID, fbToken)
                         ciphertext: CryptoJS.enc.Base64.parse(encryptedPayload2.toString())
                     }, key2Utf8, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7});
                     var userData = JSON.parse(CryptoJS.enc.Utf8.stringify(decrypted2));
-                    chrome.runtime.sendMessage({type:"finished", data:"ffbeUserData"});
-                    chrome.runtime.sendMessage({type:"userData", data:userData});
+
+                    var thirdEncrypted = CryptoJS.AES.encrypt(secondPayload, key3Utf8, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7});
+                    var thirdFinalPayload = "{\"TEAYk6R1\":{\"ytHoz4E2\":\"75528\",\"z5hB3P01\":\"2eK5Vkr8\"},\"t7n6cVWf\":{\"qrVcDe48\":\"" + thirdEncrypted.ciphertext.toString(CryptoJS.enc.Base64) + "\"}}";
+
+                    chrome.runtime.sendMessage({type:"started", data:"ffbeUserData2"});
+
+                    $.post( "https://lapis340v-gndgr.gumi.sg/lapisProd/app/php/gme/actionSymbol/7KZ4Wvuw.php", thirdFinalPayload)
+                        .done(function( data3 ) {
+                            var encryptedPayload3 = data3['t7n6cVWf']['qrVcDe48'];
+
+                            var decrypted3 = CryptoJS.AES.decrypt({
+                                ciphertext: CryptoJS.enc.Base64.parse(encryptedPayload3.toString())
+                            }, key3Utf8, {mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7});
+                            var userData2 = JSON.parse(CryptoJS.enc.Utf8.stringify(decrypted3));
+
+                            chrome.runtime.sendMessage({type: "finished", data: "ffbeUserData"});
+                            chrome.runtime.sendMessage({
+                                type: "userData",
+                                data: {'userData': userData, 'userData2': userData2}
+                            });
+                        });
                     // $.post( "http://diffs.exvius.gg:8000/GameService.svc/store-player", CryptoJS.enc.Utf8.stringify(decrypted2))
                     // .done(function( data3 ) {
                     // 	alert(data3);

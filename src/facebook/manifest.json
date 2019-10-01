@@ -1,10 +1,10 @@
 {
 	"name": "Exvius Sync",
-	"version": "1.4",
-	"description": "Syncs your units, materia and equipment to exvius.gg where it can be viewed and downloaded for use on other tools.",
+	"version": "2",
+	"description": "Download your FFBE data to file to be able to import it in FFBE Equip",
 	"manifest_version": 2,
 	"permissions": [
-		"activeTab", "tabs", "webNavigation", "webRequest", "webRequestBlocking", "https://m.facebook.com/*", "https://lapis340v-gndgr.gumi.sg/*", "https://exvius.gg/*"
+		"activeTab", "tabs", "webNavigation", "webRequest", "webRequestBlocking", "https://m.facebook.com/*", "https://lapis340v-gndgr.gumi.sg/*"
 	],
 	"background": {
 		"scripts": ["lib/jquery.min.js","lib/core.js","lib/md5.js","lib/evpkdf.js", "lib/cipher-core.js", "lib/enc-base64.js",  "lib/enc-utf16.js", "lib/format-hex.js", "lib/mode-ecb.js", "lib/aes.js","background.js"],
