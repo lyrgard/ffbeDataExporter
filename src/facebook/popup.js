@@ -81,7 +81,10 @@
         link.removeClass("hidden");
     }
 
-    function addUnitCollectionLink(userData) {
+    function addUnitCollectionLink(data) {
+        let userData = data.userData;
+        let userData2 = data.userData2;
+
         var unitSublimiation = {};
 
         var subInfoList = userData["Duz1v8x9"];
