@@ -31,8 +31,10 @@
             div.addClass("finished");
         } else if (msg.type == "userData") {
             exportDate = formatDate(new Date());
+            $('#downloadLinks').removeClass('hidden');
             addInventoryLink(msg.data);
             addUnitCollectionLink(msg.data);
+            addEspersLink(msg.data);
         }
     });
 
@@ -123,13 +125,14 @@
             }
             var unitData = {
                 'id': unitId,
+                'uniqueId': unitUniqueId,
                 'level': parseInt(unitToken["7wV3QZ80"]),
                 'pots': pots,
                 'enhancements': skillEnhancements,
                 'tmr': parseInt(unitToken["f17L8wuX"]),
                 'stmr': parseInt(unitToken["o6m7L38B"])
             };
-            if (unitId == "904000115") { // Prism Moogle
+            if (unitId == "904000115" || unitId == "904000103") { // Prism Moogle or specific trust moogle
                 var tmrId = unitToken["9mu4boy7"];
                 if (tmrId) {
                     tmrId = tmrId.split(":")[1];
@@ -146,6 +149,33 @@
         link.removeClass("hidden");
     }
 
+    function addEspersLink(data) {
+        let userData = data.userData;
+
+        let ret = [];
+        let map = {};
+
+        userData["gP9TW2Bf"].forEach(e => {
+            let esper = {
+                "id": e["Iwfx42Wo"],
+                "rarity": parseInt(e["9fW0TePj"]),
+                "level": parseInt(e["7wV3QZ80"])
+            };
+            map[esper.id] = esper;
+            ret.push(esper);
+
+        });
+        userData["1S8P2u9f"].forEach(e => {
+            map[e["Iwfx42Wo"]].board = e["E8WRi1bg"];
+        });
+
+
+        var link = $('#downloadEspers');
+        link.attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(ret)));
+        link.attr('download', userData['LhVz6aD2'][0]['9qh17ZUf'] + "_" + exportDate + "_espers.json");
+        link.removeClass("hidden");
+    }
+
     function formatDate(d) {
         var month = '' + (d.getMonth() + 1),
             day = '' + d.getDate(),
@@ -158,8 +188,13 @@
     }
 
     chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-        if (tabs[0].url != "https://www.facebook.com/") {
+        let url = tabs[0].url;
+        if (tabs[0].url.indexOf('?') > -1) {
+            url = tabs[0].url.split('?')[0];
+        }
+        if (url != "https://www.facebook.com/" && url != "https://m.facebook.com/" && url != "https://web.facebook.com/"  && url != "https://free.facebook.com/" ) {
             $('#container').addClass("notOnFacebook");
+            $('#container').append(tabs[0].url);
         } else {
             $('#container').removeClass("notOnFacebook");
         }
