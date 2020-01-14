@@ -30,7 +30,7 @@
       }
 
       .notStarted {
-        visibility: hidden;
+        display:none;
       }
 
       .loading {
@@ -102,16 +102,26 @@
       #container.notOnFacebook .notOnFacebook {
         display: block;
       }
+
+      .hidden {
+        display: none;
+      }
+
+      .btn {
+        margin-bottom: 5px;
+      }
     </style>
   </head>
   <body id="container">
-    <div class="title">FFBE Data Exporter (Facebook)</div>
-    <div class="onFacebook">
-      <div class="instruction text">Make sure you're connected to Facebook then click on :</div>
-      <button id="export" class="btn btn-primary">Start Export</button>
+    <div class="title">FFBE Data Exporter (Facebook/Google)</div>
+	  <button id="googleExport" class="btn btn-primary">Start Google based Export</button>
+      <button id="facebookExport" class="btn btn-primary">Start Facebook Export</button>
+      <button id="continueFacebookExport" class="btn btn-primary hidden">Continue Facebook Export</button>
       <div id="status">
         <div id="facebookToken" class="text notStarted">Facebook Token: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
         <div id="facebookId" class="text notStarted">Facebook User Id: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
+		<div id="googleToken" class="text notStarted">Google Token: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
+		<div id="googleId" class="text notStarted">Google Id: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
         <div id="ffbeConnect" class="text notStarted">FFBE Connexion: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
         <div id="ffbeUserData" class="text notStarted">FFBE User Data: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
       </div>
@@ -122,10 +132,6 @@
         <a id="downloadEspers" class="hidden btn btn-outline-secondary" href="">Espers</a>
       </div>
       <script src="lib/jquery.min.js"></script>
-      <script src="popup.js"></script>
-    </div>
-    <div class="notOnFacebook">
-      Please go to https://facebook.com/ to use this addon
-    </div>
+      <script src="ffbeSync.js"></script>
   </body>
 </html>

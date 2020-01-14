@@ -1,24 +1,53 @@
 (function() {
 
-    var exportDate;
+    var googleLoginTabId;
+    var facebookTabId;
 
-    function onClick() {
-		
-		if(!confirm("Are you sure you want to allow this extension to grab your facebook auth token and login to the game servers as yourself? Press OK to Continue"))
-		{
-			return;
-		}
+    document.getElementById('googleExport').addEventListener('click', () => {
+        if(!confirm("Are you sure you want to allow this extension to grab your Google auth token and login to the game servers as yourself? Press OK to Continue")) {
+            return;
+        }
 
-        chrome.tabs.executeScript(null, { file: "/facebook.js" });
-
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            chrome.tabs.sendMessage(tabs[0].id, {type: "get_facebook_variables"});
+        chrome.tabs.create({'url':'https://accounts.google.com/embedded/setup/android?source=com.android.vending&xoauth_display_name=Android%20Device&ph=%2B123456789&imsi=123456789012345&canSk=1&lang=en&langCountry=en_us&hl=en-US&cc=us&use_native_navigation=0'}, (tab) => {
+            googleLoginTabId = tab.id;
+            var div = $("#googleToken");
+            div.removeClass("notStarted");
+            div.addClass("started");
         });
-    }
 
-    document.getElementById('export').addEventListener('click', onClick);
+        $('#googleExport').addClass('hidden');
+        $('#facebookExport').addClass('hidden');
+    });
 
+    document.getElementById('facebookExport').addEventListener('click', () => {
+        if(!confirm("Are you sure you want to allow this extension to grab your Facebook auth token and login to the game servers as yourself? Press OK to Continue")) {
+            return;
+        }
+
+        chrome.tabs.create({'url':'https://www.facebook.com'}, (tab) => {
+            facebookTabId = tab.id;
+            chrome.runtime.sendMessage({
+                type:"facebookTabId",
+                data: facebookTabId
+            });
+        });
+        $('#googleExport').addClass('hidden');
+        $('#facebookExport').addClass('hidden');
+        $('#continueFacebookExport').removeClass('hidden');
+    });
+
+
+    document.getElementById('continueFacebookExport').addEventListener('click', () => {
+        chrome.tabs.executeScript(facebookTabId, { file: "/facebook.js" });
+        setTimeout(() => chrome.tabs.sendMessage(facebookTabId, {type: "get_facebook_variables"}), 200);
+        $('#continueFacebookExport').addClass('hidden');
+    });
+
+
+    var exportDate;
+	
     chrome.runtime.onMessage.addListener(function (msg, sender, data) {
+		console.log("received msg: " + msg.type + " for: " + msg.data);
         if (msg.type == 'alert') {
             alert(msg.data);
         } else if (msg.type == "started") {
@@ -29,6 +58,9 @@
             var div = $("#" + msg.data);
             div.removeClass("started");
             div.addClass("finished");
+            if (msg.data === 'googleId') {
+                chrome.tabs.remove(googleLoginTabId);
+            }
         } else if (msg.type == "userData") {
             exportDate = formatDate(new Date());
             $('#downloadLinks').removeClass('hidden');
@@ -37,7 +69,7 @@
             addEspersLink(msg.data);
         }
     });
-
+		
     function addInventoryLink(data) {
         var ret = [];
 
@@ -50,22 +82,27 @@
             var equipStrData = userEquipStr.split(':');
             var equipId = equipStrData[0];
             var equipCount = parseInt(equipStrData[1]);
-            ret.push({'id':equipId, 'count':equipCount});
+            if (equipId && equipCount) {
+                ret.push({'id': equipId, 'count': equipCount});
+            }
         });
 
-        var userCustomEquips = userData2['uRZxw78i'];
-        userCustomEquips.forEach(function(userCustomEquip){
-            var equipId = userCustomEquip["J1YX9kmM"];
-            var enhancements = [];
-            var customAbilityArray = userCustomEquip["nM63Zvtp"].split(",");
-            customAbilityArray.forEach(function(customAbilityStr){
-               if (customAbilityStr) {
-                   var abilityId = customAbilityStr.split(":")[1];
-                   enhancements.push(abilityId);
-                }
-            });
-            ret.push({'id':equipId, 'count':1, 'enhancements': enhancements});
-        });
+		if (userData2 != null)
+		{
+			var userCustomEquips = userData2['uRZxw78i'];
+			userCustomEquips.forEach(function(userCustomEquip){
+				var equipId = userCustomEquip["J1YX9kmM"];
+				var enhancements = [];
+				var customAbilityArray = userCustomEquip["nM63Zvtp"].split(",");
+				customAbilityArray.forEach(function(customAbilityStr){
+				   if (customAbilityStr) {
+					   var abilityId = customAbilityStr.split(":")[1];
+					   enhancements.push(abilityId);
+					}
+				});
+				ret.push({'id':equipId, 'count':1, 'enhancements': enhancements});
+			});
+		}
 
         var userMateriaListStringArray = userData['aS39Eshy'][0]['HpL3FM4V'].split(",");
 
@@ -73,7 +110,9 @@
             var materiaStrData = userMateriaStr.split(':');
             var materiaId = materiaStrData[0];
             var materiaCount = parseInt(materiaStrData[1]);
-            ret.push({'id':materiaId, 'count':materiaCount});
+            if (materiaId && materiaCount) {
+                ret.push({'id': materiaId, 'count': materiaCount});
+            }
         });
 
 
@@ -186,19 +225,5 @@
 
         return [year, month, day].join('-');
     }
-
-    chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-        let url = tabs[0].url;
-        if (tabs[0].url.indexOf('?') > -1) {
-            url = tabs[0].url.split('?')[0];
-        }
-        if (url != "https://www.facebook.com/" && url != "https://m.facebook.com/" && url != "https://web.facebook.com/"  && url != "https://free.facebook.com/" ) {
-            $('#container').addClass("notOnFacebook");
-            $('#container').append(tabs[0].url);
-        } else {
-            $('#container').removeClass("notOnFacebook");
-        }
-    });
-
 
 })();
