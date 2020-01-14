@@ -17,6 +17,9 @@
 
         $('#googleExport').addClass('hidden');
         $('#facebookExport').addClass('hidden');
+        $('#how-to-use').addClass('hidden');
+        $('#reinit').removeClass('hidden');
+
     });
 
     document.getElementById('facebookExport').addEventListener('click', () => {
@@ -34,6 +37,8 @@
         $('#googleExport').addClass('hidden');
         $('#facebookExport').addClass('hidden');
         $('#continueFacebookExport').removeClass('hidden');
+        $('#how-to-use').addClass('hidden');
+        $('#reinit').removeClass('hidden');
     });
 
 
@@ -41,6 +46,15 @@
         chrome.tabs.executeScript(facebookTabId, { file: "/facebook.js" });
         setTimeout(() => chrome.tabs.sendMessage(facebookTabId, {type: "get_facebook_variables"}), 200);
         $('#continueFacebookExport').addClass('hidden');
+    });
+
+    document.getElementById('reinit').addEventListener('click', () => {
+        $('#googleExport').removeClass('hidden');
+        $('#facebookExport').removeClass('hidden');
+        $('#continueFacebookExport').addClass('hidden');
+        $('#how-to-use').removeClass('hidden');
+        $('#reinit').addClass('hidden');
+        $('.started').addClass('notStarted').removeClass('started');
     });
 
 

@@ -110,28 +110,42 @@
       .btn {
         margin-bottom: 5px;
       }
+
+      #how-to-use, #reinit {
+        margin-top: 20px;
+      }
     </style>
   </head>
   <body id="container">
     <div class="title">FFBE Data Exporter (Facebook/Google)</div>
-	  <button id="googleExport" class="btn btn-primary">Start Google based Export</button>
-      <button id="facebookExport" class="btn btn-primary">Start Facebook Export</button>
-      <button id="continueFacebookExport" class="btn btn-primary hidden">Continue Facebook Export</button>
-      <div id="status">
-        <div id="facebookToken" class="text notStarted">Facebook Token: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
-        <div id="facebookId" class="text notStarted">Facebook User Id: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
-		<div id="googleToken" class="text notStarted">Google Token: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
-		<div id="googleId" class="text notStarted">Google Id: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
-        <div id="ffbeConnect" class="text notStarted">FFBE Connexion: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
-        <div id="ffbeUserData" class="text notStarted">FFBE User Data: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
-      </div>
-      <div id="downloadLinks" class="hidden">
-        <span>Download:</span>
-        <a id="downloadInventory" class="hidden btn btn-outline-secondary" href="">Inventory</a>
-        <a id="downloadUnitCollection" class="hidden btn btn-outline-secondary" href="">Units</a>
-        <a id="downloadEspers" class="hidden btn btn-outline-secondary" href="">Espers</a>
-      </div>
-      <script src="lib/jquery.min.js"></script>
-      <script src="ffbeSync.js"></script>
+    <button id="googleExport" class="btn btn-primary">Start Google based Export</button>
+    <button id="facebookExport" class="btn btn-primary">Start Facebook based Export</button>
+    <button id="continueFacebookExport" class="btn btn-primary hidden">Continue Facebook Export</button>
+    <div id="status">
+      <div id="facebookToken" class="text notStarted">Facebook Token: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
+      <div id="facebookId" class="text notStarted">Facebook User Id: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
+      <div id="googleToken" class="text notStarted">Google Token: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
+      <div id="googleId" class="text notStarted">Google Id: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
+      <div id="ffbeConnect" class="text notStarted">FFBE Connexion: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
+      <div id="ffbeUserData" class="text notStarted">FFBE User Data: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
+    </div>
+    <div id="downloadLinks" class="hidden">
+      <span>Download:</span>
+      <a id="downloadInventory" class="hidden btn btn-outline-secondary" href="">Inventory</a>
+      <a id="downloadUnitCollection" class="hidden btn btn-outline-secondary" href="">Units</a>
+      <a id="downloadEspers" class="hidden btn btn-outline-secondary" href="">Espers</a>
+    </div>
+    <div id="how-to-use">
+      <h3>How to use this</h3>
+      <dl>
+        <dt>If your FFBE account is linked to Google</dt>
+        <dd>Click on "Start Google based Export". A new tab will open, with a google login form. Input account name, password, then agree. That tab will close, and you'll get back here. After some seconds, you should be able to download your data files (units, inventory and espers)</dd>
+        <dt>If your FFBE account is linked to Facebook</dt>
+        <dd>Click on "Start Facebook based Export". A new tab will open, on Facebook. Make sure you're logged in facebook, and that the facebook page finished loading. Then come back on this tab and click on "Continue Facebook Export". After some seconds, you should be able to download your data files (units, inventory and espers)</dd>
+      </dl>
+    </div>
+    <button id="reinit" class="btn btn-secondary hidden">Reinit</button>
+    <script src="lib/jquery.min.js"></script>
+    <script src="ffbeSync.js"></script>
   </body>
 </html>
