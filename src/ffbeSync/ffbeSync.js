@@ -169,6 +169,14 @@
                 mag:parseInt(unitToken["Y9H6TWnv"].split("-")[1]),
                 spr:parseInt(unitToken["sa8Ewx3H"].split("-")[1])
             }
+            var doors = {
+                hp:parseInt(unitToken["em5hx4FX"].split("-")[2]) || 0,
+                mp:parseInt(unitToken["L0MX7edB"].split("-")[2]) || 0,
+                atk:parseInt(unitToken["o7Ynu1XP"].split("-")[2]) || 0,
+                def:parseInt(unitToken["6tyb58Kc"].split("-")[2]) || 0,
+                mag:parseInt(unitToken["Y9H6TWnv"].split("-")[2]) || 0,
+                spr:parseInt(unitToken["sa8Ewx3H"].split("-")[2]) || 0
+            }
 
             var skillEnhancements = [];
             if (unitSublimiation[unitUniqueId]) {
@@ -181,6 +189,7 @@
                 'uniqueId': unitUniqueId,
                 'level': parseInt(unitToken["7wV3QZ80"]),
                 'pots': pots,
+                'doors':doors,
                 'enhancements': skillEnhancements,
                 'tmr': parseInt(unitToken["f17L8wuX"]),
                 'stmr': parseInt(unitToken["o6m7L38B"])

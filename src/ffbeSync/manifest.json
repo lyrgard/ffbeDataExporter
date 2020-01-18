@@ -19,5 +19,5 @@
    "permissions": [ "activeTab", "tabs", "webNavigation", "webRequest", "webRequestBlocking", "https://*.facebook.com/*", "https://lapis340v-gndgr.gumi.sg/*", "https://android.googleapis.com/auth", "https://accounts.google.com/*" ],
    "web_accessible_resources" : [ "ffbeSync.html", "ffbeSync.js" ],
    "update_url": "https://clients2.google.com/service/update2/crx",
-   "version": "2.2"
+   "version": "2.3.1"
 }

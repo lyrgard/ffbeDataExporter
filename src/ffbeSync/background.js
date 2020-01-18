@@ -67,14 +67,15 @@ var requestFilter = {
         urls: ["https://m.facebook.com/v3.2/dialog/oauth/confirm"]
     },
 
-    extraInfoSpec = ['requestHeaders', 'blocking'],
+    extraInfoSpec = ["requestHeaders", "blocking", "extraHeaders"],
     handler = function(details) {
         var isRefererSet = false;
-        var headers = details.requestHeaders,
-            blockingResponse = {};
+        var headers = details.requestHeaders
 
-        for (var i = 0, l = headers.length; i < l; ++i) {
-            if (headers[i].name == 'Origin') {
+
+        for (var i = 0, l = details.requestHeaders.length; i < l; i++) {
+            if (headers[i].name == 'Origin' || headers[i].name == 'origin') {
+            	console.log('change Origin to https://m.facebook.com');
                 headers[i].value = "https://m.facebook.com";
                 isRefererSet = true;
                 break;
@@ -82,17 +83,19 @@ var requestFilter = {
         }
 
         if (!isRefererSet) {
+            console.log('set Origin to https://m.facebook.com');
             headers.push({
                 name: "Origin",
                 value: "https://m.facebook.com"
             });
         }
-
-        blockingResponse.requestHeaders = headers;
-        return blockingResponse;
+        return {requestHeaders: headers};
     };
 
 chrome.webRequest.onBeforeSendHeaders.addListener(handler, requestFilter, extraInfoSpec);
+chrome.webRequest.onSendHeaders.addListener((details) => {
+	console.log("Header sent: " + JSON.stringify(details.requestHeaders));
+}, requestFilter, ['requestHeaders']);
 
 /*
  * GOOGLE PART
@@ -207,7 +210,7 @@ function getFFBEGoogleServerAuth(master_token) {
 
 					googleIdToken = data['id_token'];
 
-					idJson = JSON.parse(atob(googleIdToken.split('.')[1]));
+					idJson = JSON.parse(atob(googleIdToken.split('.')[1].replace(/_/g, '/').replace(/-/g, '+')));
 
 					console.log("parsed JWT: \n" + JSON.stringify(idJson));
 
