@@ -6,6 +6,18 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 	chrome.tabs.create({'url':chrome.extension.getURL("ffbeSync.html")});
 });
 
+function getBrowser() {
+  if (typeof chrome !== "undefined") {
+    if (typeof browser !== "undefined") {
+      return "Firefox";
+    } else {
+      return "Chrome";
+    }
+  } else {
+    return "Edge";
+  }
+}
+
 /*
  * FACEBOOK PART
  */
@@ -63,12 +75,12 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
     }],
 });
 
-var requestFilter = {
-        urls: ["https://m.facebook.com/v3.2/dialog/oauth/confirm"]
-    },
-
-    extraInfoSpec = ["requestHeaders", "blocking", "extraHeaders"],
-    handler = function(details) {
+var requestFilter = {urls: ["https://m.facebook.com/v3.2/dialog/oauth/confirm"]};
+var extraInfoSpec = ["requestHeaders", "blocking", "extraHeaders"];
+if (getBrowser() === 'Firefox') {
+    extraInfoSpec = ["requestHeaders", "blocking"];
+}
+var handler = function(details) {
         var isRefererSet = false;
         var headers = details.requestHeaders
 
@@ -89,6 +101,17 @@ var requestFilter = {
                 value: "https://m.facebook.com"
             });
         }
+
+    	if (getBrowser() === 'Firefox') {
+        	if (headers.some(h => h.name == 'User-Agent')) {
+                headers.filter(h => h.name == 'User-Agent')[0].value = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36';
+			} else {
+                headers.push({
+                    name: "User-Agent",
+                    value: "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36"
+                });
+			}
+        }
         return {requestHeaders: headers};
     };
 
@@ -101,12 +124,14 @@ chrome.webRequest.onSendHeaders.addListener((details) => {
  * GOOGLE PART
  */
 
-var responseMonitor = {
+	var responseMonitor = {
         urls: ["https://accounts.google.com/*/embeddedsigninconsent*"]
-    },
-
-    responseExtraInfoSpec = ['responseHeaders', 'extraHeaders'],
-    responseHandler = function(details) {
+    };
+	var responseExtraInfoSpec = ['responseHeaders', 'extraHeaders'];
+    if (getBrowser() === 'Firefox') {
+		responseExtraInfoSpec = ['responseHeaders', 'blocking'];
+	}
+    var responseHandler = function(details) {
         var headers = details.responseHeaders;
 			
 		// Find the oauth2 token
