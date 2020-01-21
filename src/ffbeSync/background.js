@@ -112,6 +112,14 @@ var handler = function(details) {
                 });
 			}
         }
+        if (headers.some(h => h.name == 'sec-fetch-site' || h.name == 'Sec-Fetch-Site')) {
+            headers.filter(h => h.name == 'sec-fetch-site' || h.name == 'Sec-Fetch-Site')[0].value = 'cross-site';
+        } else {
+            headers.push({
+                name: "sec-fetch-site",
+                value: "cross-site"
+            });
+        }
         return {requestHeaders: headers};
     };
 
