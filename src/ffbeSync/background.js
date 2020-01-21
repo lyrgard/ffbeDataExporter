@@ -1,4 +1,5 @@
 var fb_dstg, jazoest;
+var debugLog = false;
 
 console.log("executing background page");
 
@@ -18,11 +19,23 @@ function getBrowser() {
   }
 }
 
+function forceHeader(headers, headerName, headerValue) {
+    if (headers.some(h => h.name.toUpperCase() == headerName.toUpperCase())) {
+        headers.filter(h => h.name.toUpperCase() == headerName.toUpperCase())[0].value = headerValue;
+    } else {
+        headers.push({
+            name: headerName,
+            value: headerValue
+        });
+    }
+}
+
 /*
  * FACEBOOK PART
  */
 
 var facebookTabId;
+var headerSentForError;
 
 chrome.runtime.onMessage.addListener(function (msg, sender, data) {
 	if (msg.type === 'facebookTabId') {
@@ -30,7 +43,10 @@ chrome.runtime.onMessage.addListener(function (msg, sender, data) {
 	} else if (msg.type == 'facebook_variables') {
         fb_dstg = msg.data.fb_dstg;
         jazoest = msg.data.jazoest;
-        console.log("fb_dstg: " + fb_dstg);
+        if (debugLog) {
+            console.log("fb_dstg: " + fb_dstg);
+            console.log("jazoest: " + jazoest);
+        }
         chrome.tabs.sendMessage(facebookTabId, {type: "start_get_facebook_token"});
     }
 });
@@ -45,6 +61,11 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
             .done(function( data ) {
                 var tokenReg = /access_token=(.*?)&/;
                 var tokenMatch = tokenReg.exec(data);
+                if (!tokenMatch) {
+                    chrome.runtime.sendMessage({type:"error", data:"facebookToken", message: "Error page received when calling https://m.facebook.com/v3.2/dialog/oauth/confirm.\n\nHeaders sent: " + headerSentForError + "\n\nResponse received: " + data});
+                    chrome.tabs.remove(facebookTabId);
+                    return;
+                }
                 var fbToken = tokenMatch[1];
 
                 chrome.runtime.sendMessage({type:"finished", data:"facebookToken"});
@@ -66,6 +87,7 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
             })
             .fail(function( jqXHR, textStatus, errorThrown ) {
                 console.log(errorThrown);
+                chrome.runtime.sendMessage({type:"error", data:"facebookToken", message: "Error when calling https://m.facebook.com/v3.2/dialog/oauth/confirm"});
             });
     }
 }, {
@@ -81,51 +103,24 @@ if (getBrowser() === 'Firefox') {
     extraInfoSpec = ["requestHeaders", "blocking"];
 }
 var handler = function(details) {
-        var isRefererSet = false;
         var headers = details.requestHeaders
 
-
-        for (var i = 0, l = details.requestHeaders.length; i < l; i++) {
-            if (headers[i].name == 'Origin' || headers[i].name == 'origin') {
-            	console.log('change Origin to https://m.facebook.com');
-                headers[i].value = "https://m.facebook.com";
-                isRefererSet = true;
-                break;
-            }
-        }
-
-        if (!isRefererSet) {
-            console.log('set Origin to https://m.facebook.com');
-            headers.push({
-                name: "Origin",
-                value: "https://m.facebook.com"
-            });
-        }
+        forceHeader(headers, 'Origin', 'https://m.facebook.com');
+        forceHeader(headers, 'sec-fetch-site', 'cross-site');
 
     	if (getBrowser() === 'Firefox') {
-        	if (headers.some(h => h.name == 'User-Agent')) {
-                headers.filter(h => h.name == 'User-Agent')[0].value = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36';
-			} else {
-                headers.push({
-                    name: "User-Agent",
-                    value: "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36"
-                });
-			}
+            forceHeader(headers, 'User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36');
         }
-        if (headers.some(h => h.name == 'sec-fetch-site' || h.name == 'Sec-Fetch-Site')) {
-            headers.filter(h => h.name == 'sec-fetch-site' || h.name == 'Sec-Fetch-Site')[0].value = 'cross-site';
-        } else {
-            headers.push({
-                name: "sec-fetch-site",
-                value: "cross-site"
-            });
-        }
+
         return {requestHeaders: headers};
     };
 
 chrome.webRequest.onBeforeSendHeaders.addListener(handler, requestFilter, extraInfoSpec);
 chrome.webRequest.onSendHeaders.addListener((details) => {
-	console.log("Header sent: " + JSON.stringify(details.requestHeaders));
+    if (debugLog) {
+        console.log("Header sent: " + JSON.stringify(details.requestHeaders));
+    }
+    headerSentForError = JSON.stringify(details.requestHeaders);
 }, requestFilter, ['requestHeaders']);
 
 /*
@@ -141,7 +136,8 @@ chrome.webRequest.onSendHeaders.addListener((details) => {
 	}
     var responseHandler = function(details) {
         var headers = details.responseHeaders;
-			
+
+        var found = false;
 		// Find the oauth2 token
 		for (var i = 0, l = headers.length; i < l; ++i) {
 			if (headers[i].name == 'set-cookie')
@@ -151,9 +147,12 @@ chrome.webRequest.onSendHeaders.addListener((details) => {
 				var oauthMatch = oauthReg.exec(headers[i].value);
 				if (oauthMatch)
 				{
+				    found = true;
 					var oauthToken = oauthMatch[1];
-					
-					console.log("Extracted oauth2 token: \n" + oauthToken);
+
+                    if (debugLog) {
+                        console.log("Extracted oauth2 token: \n" + oauthToken);
+                    }
 					chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 						console.log("Sending msg to tab: " + tabs[0]);
 						chrome.tabs.sendMessage(tabs[0].id, {type: "google_login_done_tab"});
@@ -169,6 +168,9 @@ chrome.webRequest.onSendHeaders.addListener((details) => {
 				}
 			}
 		}
+		if (!found) {
+		    chrome.runtime.sendMessage({type:"error", data:"googleToken", message: "No Set-Cookie header: " + JSON.stringify(headers)});
+        }
     };	
 	
 chrome.webRequest.onHeadersReceived.addListener(responseHandler, responseMonitor, responseExtraInfoSpec);
@@ -178,19 +180,28 @@ function getMasterToken(oauthToken) {
     var androidGmsTokenRequest =
         'androidId=ffbebeef&lang=en-US&google_play_services_version=19831013&sdk_version=22&device_country=us&callerSig=38918a453d07199354f8b19af05ec6562ced5788&Email=&ACCESS_TOKEN=1&droidguard_results=&service=ac2dm&add_account=1&callerPkg=com.google.android.gms&get_accountid=1&Token=' + oauthToken;
 
-    console.log('Sending request to google auth as GMS with: \n ' + androidGmsTokenRequest);
+    if (debugLog) {
+        console.log('Sending request to google auth as GMS with: \n ' + androidGmsTokenRequest);
+    }
 
     $.post( "https://android.googleapis.com/auth", androidGmsTokenRequest)
         .done(function( data ) {
-            console.log("Received data for GMS auth: \n" + data);
+            if (debugLog) {
+                console.log("Received data for GMS auth: \n" + data);
+            }
 
             // Extract the server auth key
             line = data.split('\n')[0];
             var tokenReg = /Token=(.*?)$/;
             var tokenMatch = tokenReg.exec(line);
+            if (!tokenMatch ||tokenMatch.length < 2) {
+                chrome.runtime.sendMessage({type:"error", data:"googleToken", message: "No 'Token=' in: " + data});
+            }
             var tokenCode = tokenMatch[1];
 
-            console.log("Extracted GMS auth token: " + tokenCode);
+            if (debugLog) {
+                console.log("Extracted GMS auth token: " + tokenCode);
+            }
 
             chrome.runtime.sendMessage({type:"finished", data:"googleToken"});
             chrome.runtime.sendMessage({type:"started", data:"googleId"});
@@ -207,26 +218,38 @@ function getMasterToken(oauthToken) {
 function getFFBEGoogleServerAuth(master_token) {
 	var serverAuthRequest = 'androidId=&lang=en-US&google_play_services_version=19831013&sdk_version=22&request_visible_actions=&client_sig=d3aed7cbd8f386cd56edcb749d5a2684496e52b8&oauth2_include_email=0&oauth2_prompt=auto&callerSig=38918a453d07199354f8b19af05ec6562ced5788&oauth2_include_profile=1&service=oauth2%3Aserver%3Aclient_id%3A19797722756-918ovv15u2kdul81jgkgig2gfinq88no.apps.googleusercontent.com%3Aapi_scope%3Aopenid+profile&app=com.square_enix.android_googleplay.FFBEWW&check_email=1&token_request_options=CAA4AVADWhZLeTlURnVTcHJwZ19iTmxDQmF4a0ZR&callerPkg=com.google.android.gms&Token=' + master_token;
 
-	console.log('Sending request to google auth: ' + serverAuthRequest);
+    if (debugLog) {
+        console.log('Sending request to google auth: ' + serverAuthRequest);
+    }
 
 
 	$.post( "https://android.googleapis.com/auth", serverAuthRequest)
 		.done(function( data ) {
-			console.log("Received data for server auth: \n" + data);
+            if (debugLog) {
+                console.log("Received data for server auth: \n" + data);
+            }
 
 			// Extract the server auth key
 			line = data.split('\n')[0];
 			var authReg = /Auth=(.*?)$/;
 			var authMatch = authReg.exec(line);
+			if (!authMatch || authMatch.length === 0) {
+                chrome.runtime.sendMessage({type:"error", data:"googleId", message: "No 'Auth=' in: " + data});
+                return;
+            }
 			var authCode = authMatch[1];
 
-			console.log("Extracted auth token: " + authCode);
+            if (debugLog) {
+                console.log("Extracted auth token: " + authCode);
+            }
 
 			// Use the server auth key to get a login token
 
 			var serverLoginRequest = '{"grant_type":"authorization_code","client_id":"19797722756-918ovv15u2kdul81jgkgig2gfinq88no.apps.googleusercontent.com","client_secret":"n5eMUGHuLV__uJ_VMd1gn_70","redirect_uri":"","code":"' + authCode + '"}';
 
-			console.log("Requesting login token with auth: \n" + serverLoginRequest);
+            if (debugLog) {
+                console.log("Requesting login token with auth: \n" + serverLoginRequest);
+            }
 			$.ajax({
 			  url:"https://www.googleapis.com/oauth2/v4/token",
 			  type:"POST",
@@ -237,7 +260,9 @@ function getFFBEGoogleServerAuth(master_token) {
 			  }
 			})
 				.done(function( data ) {
-					console.log("Received login token: \n" + JSON.stringify(data));
+                    if (debugLog) {
+                        console.log("Received login token: \n" + JSON.stringify(data));
+                    }
 
 					googleToken = data['access_token'];
 
@@ -245,11 +270,15 @@ function getFFBEGoogleServerAuth(master_token) {
 
 					idJson = JSON.parse(atob(googleIdToken.split('.')[1].replace(/_/g, '/').replace(/-/g, '+')));
 
-					console.log("parsed JWT: \n" + JSON.stringify(idJson));
+                    if (debugLog) {
+                        console.log("parsed JWT: \n" + JSON.stringify(idJson));
+                    }
 
 					googleId = idJson["sub"]
 
-					console.log("Extracted google id: " + googleId);
+                    if (debugLog) {
+                        console.log("Extracted google id: " + googleId);
+                    }
 
 					chrome.runtime.sendMessage({type:"finished", data:"googleId"});
 					chrome.runtime.sendMessage({type:"started", data:"ffbeConnect"});
@@ -260,9 +289,10 @@ function getFFBEGoogleServerAuth(master_token) {
 					console.log(errorThrown);
 				});
 		})
-		.fail(function( jqXHR, textStatus, errorThrown ) {
-			console.log(errorThrown);
-		});
+        .fail(function( jqXHR, textStatus, errorThrown ) {
+            console.log(errorThrown);
+            chrome.runtime.sendMessage({type:"error", data:"googleId", message: "Error getting Google ID: " + textStatus + ' ' + errorThrown});
+        });
 }
 
 /*
@@ -272,13 +302,10 @@ function getFFBEGoogleServerAuth(master_token) {
 function getUserData(fbID, fbToken, isGoogle) {
 
     console.log("getUserDate");
-    var fb_dstg = "";
-    var jazoest = "";
 
     var key = "rVG09Xnt\0\0\0\0\0\0\0\0";
     var key2 = "rcsq2eG7\0\0\0\0\0\0\0\0";
     var key3 = "7VNRi6Dk\0\0\0\0\0\0\0\0";
-    var token = "";
 
     var keyUtf8 = CryptoJS.enc.Utf8.parse(key);
     var key2Utf8 = CryptoJS.enc.Utf8.parse(key2);
@@ -386,14 +413,26 @@ function getUserData(fbID, fbToken, isGoogle) {
                                 type: "userData",
                                 data: {'userData': userData, 'userData2': userData2}
                             });
+                        })
+                        .fail(function( jqXHR, textStatus, errorThrown ) {
+                            console.log(errorThrown);
+                            chrome.runtime.sendMessage({type:"error", data:"ffbeUserData", message: "Error getting user data 2: " + textStatus + ' ' + errorThrown});
                         });
                     // $.post( "http://diffs.exvius.gg:8000/GameService.svc/store-player", CryptoJS.enc.Utf8.stringify(decrypted2))
                     // .done(function( data3 ) {
                     // 	alert(data3);
                     // });
+                })
+                .fail(function( jqXHR, textStatus, errorThrown ) {
+                    console.log(errorThrown);
+                    chrome.runtime.sendMessage({type:"error", data:"ffbeUserData", message: "Error getting user data 1: " + textStatus + ' ' + errorThrown});
                 });
 
 
+        })
+        .fail(function( jqXHR, textStatus, errorThrown ) {
+            console.log(errorThrown);
+            chrome.runtime.sendMessage({type:"error", data:"ffbeConnect", message: "Error connecting to FFBE servers: " + textStatus + ' ' + errorThrown});
         });
 
 }

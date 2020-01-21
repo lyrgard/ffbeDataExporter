@@ -4,7 +4,6 @@
     <link rel="stylesheet" type="text/css" href="lib/bootstrap.min.css"/>
     <style>
       #container {
-        width: 400px;
         padding: 10px;
       }
 
@@ -33,6 +32,10 @@
         display:none;
       }
 
+      .inError .error {
+        display: inline;
+      }
+
       .loading {
         display: none;
       }
@@ -41,6 +44,11 @@
       }
       .error {
         display: none;
+      }
+      .errorMessage {
+        margin-left: 10px;
+        display: block;
+        white-space: pre-wrap;
       }
 
       .started .loading {
@@ -122,12 +130,12 @@
     <button id="facebookExport" class="btn btn-primary">Start Facebook based Export</button>
     <button id="continueFacebookExport" class="btn btn-primary hidden">Continue Facebook Export</button>
     <div id="status">
-      <div id="facebookToken" class="text notStarted">Facebook Token: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
-      <div id="facebookId" class="text notStarted">Facebook User Id: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
-      <div id="googleToken" class="text notStarted">Google Token: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
-      <div id="googleId" class="text notStarted">Google Id: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
-      <div id="ffbeConnect" class="text notStarted">FFBE Connexion: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
-      <div id="ffbeUserData" class="text notStarted">FFBE User Data: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span></div>
+      <div id="facebookToken" class="text notStarted">Facebook Token: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span><span class="errorMessage"></span></div>
+      <div id="facebookId" class="text notStarted">Facebook User Id: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span><span class="errorMessage"></span></div>
+      <div id="googleToken" class="text notStarted">Google Token: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span><span class="errorMessage"></span></div>
+      <div id="googleId" class="text notStarted">Google Id: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span><span class="errorMessage"></span></div>
+      <div id="ffbeConnect" class="text notStarted">FFBE Connexion: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span><span class="errorMessage"></span></div>
+      <div id="ffbeUserData" class="text notStarted">FFBE User Data: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span><span class="errorMessage"></span></div>
     </div>
     <div id="downloadLinks" class="hidden">
       <span>Download:</span>
@@ -144,7 +152,7 @@
         <dd>Click on "Start Facebook based Export". A new tab will open, on Facebook. Make sure you're logged in facebook, and that the facebook page finished loading. Then come back on this tab and click on "Continue Facebook Export". After some seconds, you should be able to download your data files (units, inventory and espers)</dd>
       </dl>
     </div>
-    <button id="reinit" class="btn btn-secondary hidden">Reinit</button>
+    <button id="reinit" class="btn btn-secondary hidden">Start again</button>
     <script src="lib/jquery.min.js"></script>
     <script src="ffbeSync.js"></script>
   </body>

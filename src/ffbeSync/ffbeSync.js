@@ -55,6 +55,9 @@
         $('#how-to-use').removeClass('hidden');
         $('#reinit').addClass('hidden');
         $('.started').addClass('notStarted').removeClass('started');
+        $('.finished').addClass('notStarted').removeClass('finished');
+        $('.inError').addClass('notStarted').removeClass('inError');
+        $('.errorMessage').text('');
     });
 
 
@@ -75,6 +78,11 @@
             if (msg.data === 'googleId') {
                 chrome.tabs.remove(googleLoginTabId);
             }
+        } else if (msg.type == "error") {
+            var div = $("#" + msg.data);
+            div.removeClass("started");
+            div.addClass("inError");
+            div.find('.errorMessage').text(msg.message);
         } else if (msg.type == "userData") {
             exportDate = formatDate(new Date());
             $('#downloadLinks').removeClass('hidden');
@@ -248,5 +256,4 @@
 
         return [year, month, day].join('-');
     }
-
 })();
