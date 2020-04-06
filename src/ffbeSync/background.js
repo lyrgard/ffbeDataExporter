@@ -230,7 +230,7 @@ function getFFBEGoogleServerAuth(master_token) {
             }
 
 			// Extract the server auth key
-			line = data.split('\n')[0];
+			line = data.split('\n').find(line => line.indexOf('Auth=') > -1);
 			var authReg = /Auth=(.*?)$/;
 			var authMatch = authReg.exec(line);
 			if (!authMatch || authMatch.length === 0) {
