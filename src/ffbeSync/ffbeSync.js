@@ -27,7 +27,7 @@
             return;
         }
 
-        chrome.tabs.create({'url':'https://www.facebook.com'}, (tab) => {
+        chrome.tabs.create({'url':'https://m.facebook.com'}, (tab) => {
             facebookTabId = tab.id;
             chrome.runtime.sendMessage({
                 type:"facebookTabId",
