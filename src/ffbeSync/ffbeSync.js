@@ -27,7 +27,7 @@
             return;
         }
 
-        chrome.tabs.create({'url':'https://www.facebook.com'}, (tab) => {
+        chrome.tabs.create({'url':'https://m.facebook.com'}, (tab) => {
             facebookTabId = tab.id;
             chrome.runtime.sendMessage({
                 type:"facebookTabId",
@@ -89,6 +89,7 @@
             addInventoryLink(msg.data);
             addUnitCollectionLink(msg.data);
             addEspersLink(msg.data);
+            addConsumablesLink(msg.data);
         }
     });
 		
@@ -108,6 +109,11 @@
                 ret.push({'id': equipId, 'count': equipCount});
             }
         });
+
+        var visionCards = userData['2Xi0wuGA'];
+        visionCards.forEach(vc => {
+            ret.push({'id':vc['5giCMUd2'], 'count': 1, 'level':vc['7wV3QZ80']});
+        })
 
 		if (userData2 != null)
 		{
@@ -176,7 +182,7 @@
                 def:parseInt(unitToken["6tyb58Kc"].split("-")[1]),
                 mag:parseInt(unitToken["Y9H6TWnv"].split("-")[1]),
                 spr:parseInt(unitToken["sa8Ewx3H"].split("-")[1])
-            }
+            };
             var doors = {
                 hp:parseInt(unitToken["em5hx4FX"].split("-")[2]) || 0,
                 mp:parseInt(unitToken["L0MX7edB"].split("-")[2]) || 0,
@@ -184,7 +190,7 @@
                 def:parseInt(unitToken["6tyb58Kc"].split("-")[2]) || 0,
                 mag:parseInt(unitToken["Y9H6TWnv"].split("-")[2]) || 0,
                 spr:parseInt(unitToken["sa8Ewx3H"].split("-")[2]) || 0
-            }
+            };
 
             var skillEnhancements = [];
             if (unitSublimiation[unitUniqueId]) {
@@ -200,13 +206,24 @@
                 'doors':doors,
                 'enhancements': skillEnhancements,
                 'tmr': parseInt(unitToken["f17L8wuX"]),
-                'stmr': parseInt(unitToken["o6m7L38B"])
+                'stmr': parseInt(unitToken["o6m7L38B"]),
+                'lbLevel':parseInt(unitToken["a71oxzCH"]),
+                'currentLbLevelExp': parseInt(unitToken["EXf5G3Mk"]),
+                'totalExp': parseInt(unitToken["X9ABM7En"]),
+                'currentLevelExp': parseInt(unitToken["B6H34Mea"])
             };
             if (unitId == "904000115" || unitId == "904000103") { // Prism Moogle or specific trust moogle
                 var tmrId = unitToken["9mu4boy7"];
                 if (tmrId) {
                     tmrId = tmrId.split(":")[1];
                     unitData['tmrId'] = tmrId;
+                }
+            }
+            if (unitId == "906000103") { // super trust moogle
+                var stmrId = unitToken["C74EmZ1I"];
+                if (stmrId) {
+                    stmrId = stmrId.split(":")[1];
+                    unitData['stmrId'] = stmrId;
                 }
             }
             ret.push(unitData);
@@ -216,6 +233,29 @@
         var link = $('#downloadUnitCollection');
         link.attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(ret)));
         link.attr('download', userData['LhVz6aD2'][0]['9qh17ZUf'] + "_" + exportDate + "_units.json");
+        link.removeClass("hidden");
+    }
+
+    function addConsumablesLink(data){
+      let userData = data.userData;
+      let ret = [];
+      var itemList = userData["4rC0aLkA"];
+      itemList.forEach(function(itemToken){
+        let itemCSV=itemToken["HpL3FM4V"];
+        var array = itemCSV.split(',');
+        array.forEach(function(array){
+          let itemId=array.split(":")[0];
+          let itemQty=array.split(":")[1];
+          var consumble={
+            'itemId':itemId,
+            'itemQty':itemQty
+          };
+          ret.push(consumble);
+        });
+      });
+        var link = $('#downloadConsumables');
+        link.attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(ret)));
+        link.attr('download', userData['LhVz6aD2'][0]['9qh17ZUf'] + "_" + exportDate + "_consumables.json");
         link.removeClass("hidden");
     }
 
