@@ -98,6 +98,7 @@
 
         let userData = data.userData;
         let userData2 = data.userData2;
+        let userData3 = data.userData3;
 
         var userEquipListStringArray = userData['w83oV9uP'][0]['HpL3FM4V'].split(",");
 
@@ -115,9 +116,9 @@
             ret.push({'id':vc['5giCMUd2'], 'count': 1, 'level':vc['7wV3QZ80']});
         })
 
-		if (userData2 != null)
+		if (userData3 != null)
 		{
-			var userCustomEquips = userData2['uRZxw78i'];
+			var userCustomEquips = userData3['uRZxw78i'];
 			userCustomEquips.forEach(function(userCustomEquip){
 				var equipId = userCustomEquip["J1YX9kmM"];
 				var enhancements = [];
@@ -210,7 +211,10 @@
                 'lbLevel':parseInt(unitToken["a71oxzCH"]),
                 'currentLbLevelExp': parseInt(unitToken["EXf5G3Mk"]),
                 'totalExp': parseInt(unitToken["X9ABM7En"]),
-                'currentLevelExp': parseInt(unitToken["B6H34Mea"])
+                'currentLevelExp': parseInt(unitToken["B6H34Mea"]),
+                'exRank': parseInt(unitToken["f8vk4JrD"]),
+                'nvRarity': unitToken["T9Apq5fS"] == '1',
+                'nva': unitToken["k9GFaWm1"] == '1'
             };
             if (unitId == "904000115" || unitId == "904000103") { // Prism Moogle or specific trust moogle
                 var tmrId = unitToken["9mu4boy7"];

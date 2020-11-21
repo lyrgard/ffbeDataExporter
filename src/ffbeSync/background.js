@@ -306,10 +306,12 @@ function getUserData(fbID, fbToken, isGoogle) {
     var key = "rVG09Xnt\0\0\0\0\0\0\0\0";
     var key2 = "rcsq2eG7\0\0\0\0\0\0\0\0";
     var key3 = "7VNRi6Dk\0\0\0\0\0\0\0\0";
+    var key4 = "0Dn4hbWC\0\0\0\0\0\0\0\0"
 
     var keyUtf8 = CryptoJS.enc.Utf8.parse(key);
     var key2Utf8 = CryptoJS.enc.Utf8.parse(key2);
     var key3Utf8 = CryptoJS.enc.Utf8.parse(key3);
+    var key4Utf8 = CryptoJS.enc.Utf8.parse(key4);
 
 
 	if (isGoogle) {
@@ -375,7 +377,10 @@ function getUserData(fbID, fbToken, isGoogle) {
 
             $.post( "https://lapis340v-gndgr.gumi.sg/lapisProd/app/php/gme/actionSymbol/u7sHDCg4.php", secondFinalPayload)
                 .done(function( data2 ) {
-					
+
+                    if (!data2['t7n6cVWf']) {
+                        chrome.runtime.sendMessage({type:"error", data:"ffbeUserData", message: "Error while getting first userData. Server sent back a message. Try again."});
+                    }
                     var encryptedPayload2 = data2['t7n6cVWf']['qrVcDe48'];
 
                     var decrypted2 = CryptoJS.AES.decrypt({
@@ -383,7 +388,7 @@ function getUserData(fbID, fbToken, isGoogle) {
                     }, key2Utf8, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7});
                     var userData = JSON.parse(CryptoJS.enc.Utf8.stringify(decrypted2));
 					
-					console.log('Logon response length: ' + CryptoJS.enc.Utf8.stringify(decrypted2).length);
+					console.log('userData length: ' + CryptoJS.enc.Utf8.stringify(decrypted2).length);
 
                     var thirdEncrypted = CryptoJS.AES.encrypt(secondPayload, key3Utf8, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7});
                     var thirdFinalPayload = "{\"TEAYk6R1\":{\"ytHoz4E2\":\"75528\",\"z5hB3P01\":\"2eK5Vkr8\"},\"t7n6cVWf\":{\"qrVcDe48\":\"" + thirdEncrypted.ciphertext.toString(CryptoJS.enc.Base64) + "\"}}";
@@ -408,11 +413,42 @@ function getUserData(fbID, fbToken, isGoogle) {
 								userData2 = JSON.parse(CryptoJS.enc.Utf8.stringify(decrypted3));
 							}
 
-                            chrome.runtime.sendMessage({type: "finished", data: "ffbeUserData"});
-                            chrome.runtime.sendMessage({
-                                type: "userData",
-                                data: {'userData': userData, 'userData2': userData2}
-                            });
+                            var fourthEncrypted = CryptoJS.AES.encrypt(secondPayload, key4Utf8, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7});
+                            var fourthFinalPayload = "{\"TEAYk6R1\":{\"ytHoz4E2\":\"75528\",\"z5hB3P01\":\"4rjw5pnv\"},\"t7n6cVWf\":{\"qrVcDe48\":\"" + fourthEncrypted.ciphertext.toString(CryptoJS.enc.Base64) + "\"}}";
+
+                            chrome.runtime.sendMessage({type:"started", data:"ffbeUserData3"});
+
+                            $.post( "https://lapis340v-gndgr.gumi.sg/lapisProd/app/php/gme/actionSymbol/lZXr14iy.php", fourthFinalPayload)
+                                .done(function( data4 ) {
+
+                                    console.log('Userinfo3 response length: ' + JSON.stringify(data4).length);
+
+                                    var userData3 = null;
+                                    // Some accounts don't have this field
+                                    if (data4 != null && data4['t7n6cVWf'] != null && 'qrVcDe48' in data4['t7n6cVWf'])
+                                    {
+
+                                        var encryptedPayload4 = data4['t7n6cVWf']['qrVcDe48'];
+
+                                        var decrypted4 = CryptoJS.AES.decrypt({
+                                            ciphertext: CryptoJS.enc.Base64.parse(encryptedPayload4.toString())
+                                        }, key4Utf8, {mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7});
+                                        userData3 = JSON.parse(CryptoJS.enc.Utf8.stringify(decrypted4));
+                                    } else {
+                                        console.log('empty userData3');
+                                    }
+
+                                    chrome.runtime.sendMessage({type: "finished", data: "ffbeUserData"});
+                                    chrome.runtime.sendMessage({
+                                        type: "userData",
+                                        data: {'userData': userData, 'userData2': userData2, 'userData3': userData3}
+                                    });
+                                })
+                                .fail(function( jqXHR, textStatus, errorThrown ) {
+                                    console.log(errorThrown);
+                                    chrome.runtime.sendMessage({type:"error", data:"ffbeUserData", message: "Error getting user data 3: " + textStatus + ' ' + errorThrown});
+                                });
+
                         })
                         .fail(function( jqXHR, textStatus, errorThrown ) {
                             console.log(errorThrown);
