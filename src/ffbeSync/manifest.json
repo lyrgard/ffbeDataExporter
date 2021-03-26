@@ -16,8 +16,8 @@
    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApMPWtk6eX0Dd+H6fAoDoCUAnMhFJQdivhhAIK95VVeDosflMuOrHUWjWc0xU1T1iIsWrxA2xyfnuKQWzFWJSLVtkfPFGMpkjqOYyafyqITlEGEF7wxV0anpF0ZMImnVDZ4kdVHNir9t9Dp2bSkzTm8/sdk4sfI2yz4zJLhor1uWFbSBlOwaleo1GUtdkXAx5j2wljdDyUp0sZtDDTF7M3UJupeXaNDKkEFoLeJ55FujM2+lhDfoD02NqM9RMpp5vKrrPFCkjVSajLgpsPZzKTP+eNbu4KuPaNa0lwvVQwb+07b861R3JpILPg6SeBG9ui9lC+FaAQ+TbXVyRhbIt0QIDAQAB",
    "manifest_version": 2,
    "name": "FFBE Sync",
-   "permissions": [ "tabs", "webNavigation", "webRequest", "webRequestBlocking", "https://*.facebook.com/*", "https://lapis340v-gndgr.gumi.sg/*", "https://android.googleapis.com/auth", "https://accounts.google.com/*" ],
+   "permissions": [ "tabs", "webRequest", "webRequestBlocking", "https://*.facebook.com/*", "https://lapis340v-gndgr.gumi.sg/*", "https://android.googleapis.com/auth", "https://accounts.google.com/*" ],
    "web_accessible_resources" : [ "ffbeSync.html", "ffbeSync.js" ],
    "update_url": "https://clients2.google.com/service/update2/crx",
-   "version": "2.5.5"
+   "version": "2.5.6"
 }
