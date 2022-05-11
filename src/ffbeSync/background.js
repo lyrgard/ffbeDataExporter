@@ -39,7 +39,7 @@ let fbToken;
 
 //listens for facebook tab url to update after login using facebook screen
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (tab.url === "https://m.facebook.com/v5.0/dialog/oauth/confirm/" && tab.status == "complete") {
+    if (tab.url === "https://m.facebook.com/v8.0/dialog/oauth/confirm/" && tab.status == "complete") {
         console.log('update function', tab)
         chrome.tabs.executeScript(tab.id, { file: "/facebook.js" });
     }
