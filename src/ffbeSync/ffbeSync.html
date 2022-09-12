@@ -130,6 +130,8 @@
     <div class="title">FFBE Data Exporter (Facebook/Google)</div>
     <button id="googleExport" class="btn btn-primary">Start Google based Export</button>
     <button id="facebookExport" class="btn btn-primary">Start Facebook based Export</button>
+
+
     <div id="status">
       <div id="facebookToken" class="text notStarted">Facebook Token: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span><span class="errorMessage"></span></div>
       <div id="facebookId" class="text notStarted">Facebook User Id: <span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="ok">OK</span><span class="error">ERROR</span><span class="errorMessage"></span></div>
@@ -155,7 +157,14 @@
         <dt>If your FFBE account is linked to Facebook</dt>
         <dd>Click on "Start Facebook based Export". A new tab will open, on Facebook. Make sure you're logged in facebook, and that the facebook page finished loading. After some seconds, you should be able to download your data files (units, inventory and espers)</dd>
       </dl>
+      <div id="facebookId">
+        <p>If using FB, obtain your user ID manually. Refer to <a href="https://www.facebook.com/help/1397933243846983">here</a> on how to obtain it </p>
+        <label for="name">User ID</label>
+        <input type="text" id="userId" name="name" required
+           minlength="17" maxlength="17" size="20">
+      </div>
     </div>
+   
     <button id="reinit" class="btn btn-secondary hidden">Start again</button>
     <script src="lib/jquery.min.js"></script>
     <script src="ffbeSync.js"></script>

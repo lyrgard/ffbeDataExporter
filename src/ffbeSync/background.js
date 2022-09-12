@@ -2,20 +2,20 @@ var debugLog = false;
 
 console.log("executing background page");
 
-chrome.browserAction.onClicked.addListener(function(tab) {
-	chrome.tabs.create({'url':chrome.extension.getURL("ffbeSync.html")});
+chrome.browserAction.onClicked.addListener(function (tab) {
+    chrome.tabs.create({ 'url': chrome.extension.getURL("ffbeSync.html") });
 });
 
 function getBrowser() {
-  if (typeof chrome !== "undefined") {
-    if (typeof browser !== "undefined") {
-      return "Firefox";
+    if (typeof chrome !== "undefined") {
+        if (typeof browser !== "undefined") {
+            return "Firefox";
+        } else {
+            return "Chrome";
+        }
     } else {
-      return "Chrome";
+        return "Edge";
     }
-  } else {
-    return "Edge";
-  }
 }
 
 function forceHeader(headers, headerName, headerValue) {
@@ -39,7 +39,7 @@ let fbToken;
 
 //listens for facebook tab url to update after login using facebook screen
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (tab.url === "https://m.facebook.com/v7.0/dialog/oauth/confirm/" && tab.status == "complete") {
+    if (tab.url.startsWith("https://m.facebook.com/v14.0/dialog/oauth/read") && tab.status == "complete") {
         console.log('update function', tab)
         chrome.tabs.executeScript(tab.id, { file: "/facebook.js" });
     }
@@ -67,19 +67,31 @@ chrome.runtime.onMessage.addListener(function (msg, sender, data) {
 simplified graph request. No need to post to "https://m.facebook.com/v3.2/dialog/oauth/confirm" with jazoest and fb_dtsg payload
 */
 function validatefbToken() {
-    var fbUrl = "https://graph.facebook.com/v3.2/me?access_token=" + fbToken + "&fields=id%2Cname%2Cfirst_name%2Clast_name%2Cinstalled%2Cemail%2Cpicture.type(small)&format=json&sdk=android";
+    // This end point /me when used with access token used to return the user ID but it seems this was changed. The normal behaviour would return the user ID as of 2022-09-13.
+    // try {
+    //     var fbUrl = "https://graph.facebook.com/v14.0/me?access_token=" + fbToken + "&fields=id%2Cname%2Cfirst_name%2Clast_name%2Cinstalled%2Cemail%2Cpicture.type(small)&format=json&sdk=android&debug=all";
+    //     chrome.runtime.sendMessage({ type: "started", data: "facebookId" });
+    //     $.get(fbUrl)
+    //         .done(function (fbResponse) {
+    //             chrome.storage.local.get(['userId'], function(result) {
+
+    //                 getUserData(result.key, fbToken);
+    //             });
+    //             //getUserData(fbID, fbToken);
+    //         });
+    // } catch (e) {
+    //     console.log(e);
+    // }
     chrome.runtime.sendMessage({ type: "started", data: "facebookId" });
-    $.get(fbUrl)
-        .done(function (fbResponse) {
-            var fbID = fbResponse["id"];
-            chrome.runtime.sendMessage({ type: "finished", data: "facebookId" });
-            getUserData(fbID, fbToken);
-        });
+    chrome.storage.local.get(['userId'], function (result) {
+        getUserData(result.userId, fbToken);
+    });
+
 }
 
 
 
-var requestFilter = { urls: ["https://m.facebook.com/v3.2/dialog/oauth/confirm"] };
+var requestFilter = { urls: ["https://m.facebook.com/v14.0/dialog/oauth/read/*"] };
 var extraInfoSpec = ["requestHeaders", "blocking", "extraHeaders"];
 if (getBrowser() === 'Firefox') {
     extraInfoSpec = ["requestHeaders", "blocking"];
@@ -331,22 +343,33 @@ async function getUserData(accountId, authToken, isGoogle) {
     }
     const userData2 = await getUserData2(userData1)
 
+
     const getUserData3 = async (userData) => {
+
         const data = await sendMessage('started', 'ffbeUserData3', userData);
         const data_1 = await getUserInfoRequestPayload(userInfo3Key, userInfo3PayloadKey, data);
         const data_2 = await callActionSymbol(userInfo3UrlSymbol, userInfo3Key, data_1);
         const data_3 = await saveResponseAs('userData3', data_2);
         return await sendMessage('finished', 'ffbeUserData3', data_3);
     }
+
+
     const userData3 = await getUserData3(userData2)
+
     try {
-        await sendMessage('userData', { userData: userData3.userData, userData2: userData3.userData2, userData3: userData3.userData3 })
-    } catch (errorData) {
-        chrome.runtime.sendMessage({ type: "error", data: dataBySymbol[errorData.actionSymbol], message: `${errorData.status} - ${errorData.error}` })
+
+        try {
+            await sendMessage('userData', { userData: userData3.userData, userData2: userData3.userData2, userData3: userData3.userData3 })
+        } catch (errorData) {
+            chrome.runtime.sendMessage({ type: "error", data: dataBySymbol[errorData.actionSymbol], message: `${errorData.status} - ${errorData.error}` })
+        }
+    } catch (e) {
+        console.log(e);
     }
 }
 
 function getAuthenticationPayload(accountId, authToken, isGoogle, actionKey) {
+    console.log("Authentication payload");
     return new Promise((resolve => {
         if (isGoogle) {
             var testPayload = "{\"LhVz6aD2\":[{\"6Nf5risL\":\"0\",\"40w6brpQ\":\"0\",\"jHstiL12\":\"0\",\"io30YcLA\":\"Nexus 6P_android6.0\",\"K1G4fBjF\":\"2\",\"e8Si6TGh\":\"\",\"1WKh6Xqe\":\"ver.2.7.0.1\",\"64anJRhx\":\"2019-02-08 11:15:15\",\"Y76dKryw\":null,\"6e4ik6kA\":\"\",\"NggnPgQC\":\"\",\"e5zgvyv7\":\"" + authToken + "\",\"GwtMEDfU\":\"" + accountId + "\"}],\"Euv8cncS\":[{\"K2jzG6bp\":\"1\"}],\"c402FmRD\":[{\"kZdGGshD\":\"2\"}],\"c1qYg84Q\":[{\"a4hXTIm0\":\"F_APP_VERSION_AND\",\"wM9AfX6I\":\"10000\"},{\"a4hXTIm0\":\"F_RSC_VERSION\",\"wM9AfX6I\":\"0\"},{\"a4hXTIm0\":\"F_MST_VERSION\",\"wM9AfX6I\":\"2047\"}]}";
@@ -361,6 +384,7 @@ function getAuthenticationPayload(accountId, authToken, isGoogle, actionKey) {
 }
 
 function getLoginToken(accountId, authToken, isGoogle, data) {
+    console.log("Get login token" + data.loginToken)
     return new Promise(resolve => {
         if (isGoogle) {
 
