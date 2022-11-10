@@ -155,6 +155,12 @@
         <dt>If your FFBE account is linked to Facebook</dt>
         <dd>Click on "Start Facebook based Export". A new tab will open, on Facebook. Make sure you're logged in facebook, and that the facebook page finished loading. After some seconds, you should be able to download your data files (units, inventory and espers)</dd>
       </dl>
+      <div id="facebookIdInput">
+        <p>If using FB, obtain your user ID manually. Refer to <a href="https://www.facebook.com/help/1397933243846983">here</a> on how to obtain it </p>
+        <label for="userId">Facebook User ID</label>
+        <input type="text" id="userId" name="name" required
+               minlength="17" maxlength="17" size="20">
+      </div>
     </div>
     <button id="reinit" class="btn btn-secondary hidden">Start again</button>
     <script src="lib/jquery.min.js"></script>

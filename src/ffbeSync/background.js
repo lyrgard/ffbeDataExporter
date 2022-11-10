@@ -34,12 +34,13 @@ function forceHeader(headers, headerName, headerValue) {
  */
 
 var facebookTabId;
+var facebookUserId;
 var headerSentForError;
 let fbToken;
 
 //listens for facebook tab url to update after login using facebook screen
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (tab.url === "https://m.facebook.com/v7.0/dialog/oauth/confirm/" && tab.status == "complete") {
+    if (tab.url?.startsWith("https://m.facebook.com/v9.0/dialog/oauth/confirm/") && tab.status == "complete") {
         console.log('update function', tab)
         chrome.tabs.executeScript(tab.id, { file: "/facebook.js" });
     }
@@ -52,6 +53,8 @@ removes tabs on login success or failure
 chrome.runtime.onMessage.addListener(function (msg, sender, data) {
     if (msg.type == 'facebookTabId') {
         facebookTabId = msg.data;
+    } else if (msg.type == 'facebookUserId') {
+        facebookUserId = msg.data;
     } else if (msg.type == 'facebookToken') {
         fbToken = msg.data
         chrome.tabs.remove(facebookTabId);
@@ -67,19 +70,21 @@ chrome.runtime.onMessage.addListener(function (msg, sender, data) {
 simplified graph request. No need to post to "https://m.facebook.com/v3.2/dialog/oauth/confirm" with jazoest and fb_dtsg payload
 */
 function validatefbToken() {
-    var fbUrl = "https://graph.facebook.com/v3.2/me?access_token=" + fbToken + "&fields=id%2Cname%2Cfirst_name%2Clast_name%2Cinstalled%2Cemail%2Cpicture.type(small)&format=json&sdk=android";
+    //var fbUrl = "https://graph.facebook.com/me?fields=id&access_token=" + fbToken;
     chrome.runtime.sendMessage({ type: "started", data: "facebookId" });
-    $.get(fbUrl)
-        .done(function (fbResponse) {
-            var fbID = fbResponse["id"];
-            chrome.runtime.sendMessage({ type: "finished", data: "facebookId" });
-            getUserData(fbID, fbToken);
-        });
+    // $.get(fbUrl)
+    //     .done(function (fbResponse) {
+    //         var fbID = fbResponse["id"];
+    //         chrome.runtime.sendMessage({ type: "finished", data: "facebookId" });
+    //         getUserData(facebookUserId, fbToken);
+    //     });
+    chrome.runtime.sendMessage({ type: "finished", data: "facebookId" });
+    getUserData(facebookUserId, fbToken);
 }
 
 
 
-var requestFilter = { urls: ["https://m.facebook.com/v3.2/dialog/oauth/confirm"] };
+var requestFilter = { urls: ["https://m.facebook.com/v3.3/dialog/oauth/confirm"] };
 var extraInfoSpec = ["requestHeaders", "blocking", "extraHeaders"];
 if (getBrowser() === 'Firefox') {
     extraInfoSpec = ["requestHeaders", "blocking"];
